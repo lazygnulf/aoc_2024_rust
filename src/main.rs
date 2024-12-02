@@ -1,6 +1,7 @@
 use std::env;
 
 mod day01;
+mod day02;
 mod util;
 
 fn main() {
@@ -18,6 +19,7 @@ fn main() {
 
     match day {
         1 => day01::get_day().solve(),
+        2 => day02::get_day().solve(),
         _ => panic!("No implementation found."),
     }
 }
