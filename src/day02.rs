@@ -11,24 +11,61 @@ fn solve_part1(input: &str) -> String {
     input
         .lines()
         .map(|line| line.trim())
-        .filter(|line| is_safe(line))
+        .filter(|line| is_safe_1(line))
         .count()
         .to_string()
 }
 
-fn solve_part2(_input: &str) -> String {
-    "42".to_string()
+fn solve_part2(input: &str) -> String {
+    input
+        .lines()
+        .map(|line| line.trim())
+        .filter(|line| is_safe_2(line))
+        .count()
+        .to_string()
 }
 
-fn is_safe(report: &str) -> bool {
+fn exclude_element(values: &Vec<u16>, index: usize) -> Vec<u16> {
+    values
+        .iter()
+        .enumerate()
+        .filter(|&(i, _)| i != index)
+        .map(|(_, v)| v.clone())
+        .collect()
+}
+
+fn is_safe_1(report: &str) -> bool {
     let levels: Vec<u16> = report
         .split_whitespace()
         .map(|level| level.parse().expect("Error parsing integer"))
         .collect();
 
+    is_safe(&levels)
+}
+
+fn is_safe_2(report: &str) -> bool {
+    let levels: Vec<u16> = report
+        .split_whitespace()
+        .map(|level| level.parse().expect("Error parsing integer"))
+        .collect();
+
+    let mut safe = false;
+
+    for i in 0..levels.len() {
+        let reduced_levels = exclude_element(&levels, i);
+        safe = safe || is_safe(&reduced_levels);
+        if safe {
+            break;
+        }
+    }
+
+    safe
+}
+
+fn is_safe(values: &Vec<u16>) -> bool {
     let mut increasing: Option<bool> = None;
 
-    for pair in levels.windows(2) {
+    for pair in values.windows(2) {
         let diff = pair[0].abs_diff(pair[1]);
         if diff < 1 || diff > 3 {
             return false;
@@ -81,6 +118,6 @@ mod tests {
 
     #[test]
     fn test_part2_with_input() {
-        assert_eq!(solve_part2(&get_day().read_input()), "42");
+        assert_eq!(solve_part2(&get_day().read_input()), "514");
     }
 }
