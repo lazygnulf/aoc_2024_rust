@@ -1,3 +1,5 @@
+use std::iter::zip;
+
 use crate::util::Day;
 
 const DAY_NR: u8 = 1;
@@ -13,12 +15,10 @@ fn solve_part1(input: &str) -> String {
     left.sort();
     right.sort();
 
-    let mut distance = 0;
-    for i in 0..left.len() {
-        distance += left[i].abs_diff(right[i]);
-    }
-
-    distance.to_string()
+    zip(left, right)
+        .map(|(l, r)| l.abs_diff(r))
+        .sum::<u32>()
+        .to_string()
 }
 
 fn solve_part2(input: &str) -> String {
