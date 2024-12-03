@@ -37,7 +37,7 @@ fn parse_input(input: &str) -> (Vec<u32>, Vec<u32>) {
     let mut right_list: Vec<u32> = Vec::new();
 
     for line in input.lines() {
-        let parts: Vec<&str> = line.trim().split_whitespace().collect();
+        let parts: Vec<&str> = line.split_whitespace().collect();
         left_list.push(parts[0].parse().expect("Error parsing integer"));
         right_list.push(parts[1].parse().expect("Error parsing integer"));
     }

@@ -25,12 +25,12 @@ fn solve_part2(input: &str) -> String {
         .to_string()
 }
 
-fn exclude_element(values: &Vec<u16>, index: usize) -> Vec<u16> {
+fn exclude_element(values: &[u16], index: usize) -> Vec<u16> {
     values
         .iter()
         .enumerate()
         .filter(|&(i, _)| i != index)
-        .map(|(_, v)| v.clone())
+        .map(|(_, v)| *v)
         .collect()
 }
 
@@ -62,12 +62,12 @@ fn is_safe_2(report: &str) -> bool {
     safe
 }
 
-fn is_safe(values: &Vec<u16>) -> bool {
+fn is_safe(values: &[u16]) -> bool {
     let mut increasing: Option<bool> = None;
 
     for pair in values.windows(2) {
         let diff = pair[0].abs_diff(pair[1]);
-        if diff < 1 || diff > 3 {
+        if !(1..=3).contains(&diff) {
             return false;
         }
         match increasing {
