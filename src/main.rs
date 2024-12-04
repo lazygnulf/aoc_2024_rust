@@ -3,6 +3,7 @@ use std::env;
 mod day01;
 mod day02;
 mod day03;
+mod day04;
 mod util;
 
 fn main() {
@@ -22,6 +23,7 @@ fn main() {
         1 => day01::get_day().solve(),
         2 => day02::get_day().solve(),
         3 => day03::get_day().solve(),
+        4 => day04::get_day().solve(),
         _ => panic!("No implementation found."),
     }
 }
