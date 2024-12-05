@@ -49,29 +49,7 @@ impl Update {
 }
 
 fn solve_part1(input: &str) -> String {
-    let parts = input.split("\n\n").collect::<Vec<&str>>();
-
-    let order_rules: Vec<OrderRule> = parts[0]
-        .lines()
-        .map(|rule| {
-            let pages = rule.split('|').collect::<Vec<&str>>();
-            OrderRule {
-                before: pages[0].parse::<u32>().unwrap(),
-                after: pages[1].parse::<u32>().unwrap(),
-            }
-        })
-        .collect();
-
-    let updates: Vec<Update> = parts[1]
-        .lines()
-        .map(|line| {
-            let pages = line
-                .split(',')
-                .map(|page| page.parse::<u32>().unwrap())
-                .collect::<Vec<u32>>();
-            Update { pages }
-        })
-        .collect();
+    let (order_rules, updates) = parse_input(input);
 
     let mut result: u32 = 0;
     for update in updates {
@@ -95,6 +73,21 @@ fn cmp(order_rules: &Vec<OrderRule>, a: &u32, b: &u32) -> Ordering {
 }
 
 fn solve_part2(input: &str) -> String {
+    let (order_rules, updates) = parse_input(input);
+
+    let mut result: u32 = 0;
+    for update in updates {
+        if !update.check_order_rules(&order_rules) {
+            let mut fixed_update = update.pages.clone();
+            fixed_update.sort_by(|a, b| cmp(&order_rules, a, b));
+            result += fixed_update[fixed_update.len() / 2];
+        }
+    }
+
+    result.to_string()
+}
+
+fn parse_input(input: &str) -> (Vec<OrderRule>, Vec<Update>) {
     let parts = input.split("\n\n").collect::<Vec<&str>>();
 
     let order_rules: Vec<OrderRule> = parts[0]
@@ -119,16 +112,7 @@ fn solve_part2(input: &str) -> String {
         })
         .collect();
 
-    let mut result: u32 = 0;
-    for update in updates {
-        if !update.check_order_rules(&order_rules) {
-            let mut fixed_update = update.pages.clone();
-            fixed_update.sort_by(|a, b| cmp(&order_rules, a, b));
-            result += fixed_update[fixed_update.len() / 2];
-        }
-    }
-
-    result.to_string()
+    (order_rules, updates)
 }
 
 #[cfg(test)]
