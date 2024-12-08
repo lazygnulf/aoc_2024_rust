@@ -130,11 +130,11 @@ impl Map {
         true
     }
 
-    fn print(&self) {
-        for row in &self.map {
-            println!("{}", String::from_utf8(row.clone()).unwrap());
-        }
-    }
+    // fn print(&self) {
+    //     for row in &self.map {
+    //         println!("{}", String::from_utf8(row.clone()).unwrap());
+    //     }
+    // }
 }
 
 const DIRECTIONS: [[i32; 2]; 4] = [
