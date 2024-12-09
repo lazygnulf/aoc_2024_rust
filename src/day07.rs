@@ -45,8 +45,8 @@ impl Equation {
 
         for ops in repeat_n(op_selection, nr_ops as usize).multi_cartesian_product() {
             let mut result = self.numbers[0];
-            for i in 0..ops.len() {
-                match ops[i] {
+            for (i, op) in ops.iter().enumerate() {
+                match op {
                     0 => result += self.numbers[i + 1],
                     1 => result *= self.numbers[i + 1],
                     2 => {
@@ -77,7 +77,7 @@ fn solve_part2(input: &str) -> String {
 }
 
 fn solve(input: &str, is_part1: bool) -> String {
-    let equations: Vec<Equation> = input.lines().map(|line| Equation::new(line)).collect();
+    let equations: Vec<Equation> = input.lines().map(Equation::new).collect();
 
     equations
         .into_iter()

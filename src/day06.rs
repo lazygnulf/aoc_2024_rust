@@ -42,10 +42,8 @@ fn solve_part2(input: &str) -> String {
     for row in 0..map.height() {
         for col in 0..map.width() {
             let mut test_map = Map::new(input);
-            if test_map.place_obstruction(row, col) {
-                if test_map.check_cycle() {
-                    result += 1;
-                }
+            if test_map.place_obstruction(row, col) && test_map.check_cycle() {
+                result += 1;
             }
         }
     }
