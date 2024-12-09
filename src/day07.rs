@@ -1,6 +1,6 @@
 use std::iter::repeat_n;
 
-use itertools::{enumerate, Itertools};
+use itertools::Itertools;
 
 use crate::util::Day;
 
@@ -11,7 +11,7 @@ pub fn get_day() -> Day {
     Day::new(DAY_NR, PROBLEM_TITLE, solve_part1, solve_part2)
 }
 
-type Num = u128;
+type Num = u64;
 
 #[derive(Debug)]
 struct Equation {
@@ -35,93 +35,30 @@ impl Equation {
         }
     }
 
-    fn can_be_true(&self) -> bool {
+    fn can_be_true(&self, is_part1: bool) -> bool {
+        let op_selection: Vec<u8> = match is_part1 {
+            true => vec![0, 1],
+            false => vec![0, 1, 2],
+        };
+
         let nr_ops = self.numbers.len() as u32 - 1;
 
-        println!("Nr of ops: {}", nr_ops);
-
-        let x = (2 as Num).pow(nr_ops);
-
-        for ops in 0..x {
-            let mut result = self.numbers[0];
-            println!("{:b}", ops);
-            let mut mask = (2 as Num).pow(nr_ops - 1);
-            for i in 0..nr_ops {
-                print!("{:b} ", mask);
-                let times = ops & mask != 0;
-                if times {
-                    print!("* ");
-                    result *= self.numbers[(i + 1) as usize];
-                } else {
-                    print!("+ ");
-                    result += self.numbers[(i + 1) as usize];
-                }
-                mask >>= 1;
-            }
-            println!("   Result: {}", result);
-            if result == self.test_value {
-                println!("True !");
-                return true;
-            }
-        }
-
-        false
-    }
-
-    fn can_be_true2(&self) -> bool {
-        let nr_ops = self.numbers.len() as u32 - 1;
-
-        println!("Nr of ops: {}", nr_ops);
-
-        for ops in repeat_n([0, 1], nr_ops as usize).multi_cartesian_product() {
-            print!("{:?}", ops);
-
-            let mut result = self.numbers[0];
-            for i in 0..ops.len() {
-                match ops[i] {
-                    0 => result += self.numbers[i + 1],
-                    1 => result *= self.numbers[i + 1],
-                    _ => unreachable!(),
-                }
-            }
-            if result == self.test_value {
-                return true;
-            }
-        }
-
-        false
-    }
-
-    fn can_be_true3(&self) -> bool {
-        let nr_ops = self.numbers.len() as u32 - 1;
-
-        println!("Nr of ops: {}", nr_ops);
-
-        for ops in repeat_n([0, 1, 2], nr_ops as usize).multi_cartesian_product() {
-            print!("{:?}", ops);
-
+        for ops in repeat_n(op_selection, nr_ops as usize).multi_cartesian_product() {
             let mut result = self.numbers[0];
             for i in 0..ops.len() {
                 match ops[i] {
                     0 => result += self.numbers[i + 1],
                     1 => result *= self.numbers[i + 1],
                     2 => {
-                        println!(
-                            "Res: {}, Next: {}, log10(Next): {}",
-                            result,
-                            self.numbers[i + 1],
-                            self.numbers[i + 1].ilog10()
-                        );
                         result = result * (10 as Num).pow(self.numbers[i + 1].ilog10() + 1)
                             + self.numbers[i + 1]
                     }
                     _ => unreachable!(),
                 }
-                // if result > self.test_value {
-                //     break;
-                // }
+                if result > self.test_value {
+                    break;
+                }
             }
-            println!("  {}", result);
             if result == self.test_value {
                 return true;
             }
@@ -132,40 +69,19 @@ impl Equation {
 }
 
 fn solve_part1(input: &str) -> String {
-    let equations: Vec<Equation> = input.lines().map(|line| Equation::new(line)).collect();
-    println!("{:?}", equations);
-
-    equations
-        .into_iter()
-        .map(|e| match e.can_be_true2() {
-            true => e.test_value,
-            false => 0,
-        })
-        .sum::<Num>()
-        .to_string()
+    solve(input, true)
 }
 
-// fn is_valid(&self, operations: &[fn(u64, u64) -> u64]) -> bool {
-//         let missing = 3;
-//         // This creates all possible sequences with repetition
-//         repeat_n(operations, missing)
-//             .multi_cartesian_product()
-//             .any(|ops| {
-//                 ops.iter()
-//                     .zip(self.operands[1..].iter())
-//                     .fold(self.operands[0], |acc, (op, operand)| op(acc, *operand))
-//                     == self.result
-//             })
-//     }
-// }
-
 fn solve_part2(input: &str) -> String {
+    solve(input, false)
+}
+
+fn solve(input: &str, is_part1: bool) -> String {
     let equations: Vec<Equation> = input.lines().map(|line| Equation::new(line)).collect();
-    println!("{:?}", equations);
 
     equations
         .into_iter()
-        .map(|e| match e.can_be_true3() {
+        .map(|e| match e.can_be_true(is_part1) {
             true => e.test_value,
             false => 0,
         })
@@ -177,9 +93,8 @@ fn solve_part2(input: &str) -> String {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_part1_with_examples() {
-        let input = "190: 10 19
+    fn example() -> &'static str {
+        "190: 10 19
 3267: 81 40 27
 83: 17 5
 156: 15 6
@@ -187,14 +102,12 @@ mod tests {
 161011: 16 10 13
 192: 17 8 14
 21037: 9 7 18 13
-292: 11 6 16 20";
-        assert_eq!(solve_part1(input), "3749");
+292: 11 6 16 20"
     }
 
     #[test]
-    fn test_part1_with_simple_example() {
-        let input = "25: 2 3 19";
-        solve_part1(input);
+    fn test_part1_with_examples() {
+        assert_eq!(solve_part1(example()), "3749");
     }
 
     #[test]
@@ -204,22 +117,7 @@ mod tests {
 
     #[test]
     fn test_part2_with_examples() {
-        let input = "190: 10 19
-3267: 81 40 27
-83: 17 5
-156: 15 6
-7290: 6 8 6 15
-161011: 16 10 13
-192: 17 8 14
-21037: 9 7 18 13
-292: 11 6 16 20";
-        assert_eq!(solve_part2(input), "11387");
-    }
-
-    #[test]
-    fn test_part2_with_simple_example() {
-        let input = "7290: 6 8 6 15";
-        solve_part2(input);
+        assert_eq!(solve_part2(example()), "11387");
     }
 
     #[test]
