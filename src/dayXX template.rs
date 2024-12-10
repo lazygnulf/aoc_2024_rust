@@ -23,9 +23,13 @@ fn solve_part2(input: &str) -> String {
 mod tests {
     use super::*;
 
+    fn example() -> &'static str {
+        ""
+    }
+
     #[test]
     fn test_part1_with_examples() {
-        assert_eq!(1 + 1, 2);
+        assert_eq!(solve_part1(example()), "17");
     }
 
     #[test]
@@ -35,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_part2_with_examples() {
-        assert_eq!(1 + 1, 2);
+        assert_eq!(solve_part2(example()), "42");
     }
 
     #[test]
