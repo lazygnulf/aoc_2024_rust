@@ -8,6 +8,7 @@ mod day05;
 mod day06;
 mod day07;
 mod day08;
+mod day09;
 mod util;
 
 fn main() {
@@ -32,6 +33,7 @@ fn main() {
         6 => day06::get_day().solve(),
         7 => day07::get_day().solve(),
         8 => day08::get_day().solve(),
+        9 => day09::get_day().solve(),
 
         _ => panic!("No implementation found."),
     }
