@@ -130,8 +130,8 @@ fn solve_part2(input: &str) -> String {
         for pair in positions.iter().combinations(2) {
             print!("Pair {:?}: ", pair);
 
-            let mut row_diff = pair[1].row - pair[0].row;
-            let mut col_diff = pair[1].col - pair[0].col;
+            let row_diff = pair[1].row - pair[0].row;
+            let col_diff = pair[1].col - pair[0].col;
 
             let origin = Pos {
                 row: pair[0].row,
