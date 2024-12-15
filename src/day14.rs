@@ -1,4 +1,5 @@
 use glam::IVec2;
+use itertools::Itertools;
 use regex::Regex;
 
 use crate::util::Day;
@@ -20,8 +21,21 @@ fn solve_part1_helper(input: &str, width: i32, height: i32) -> String {
     floor.safety_factor().to_string()
 }
 
-fn solve_part2(_input: &str) -> String {
-    "42".to_string()
+fn solve_part2(input: &str) -> String {
+    // Honestly I don't know why this is working - I didn't even understand the the task completely.
+    // I copied the soltution from Felix: https://github.com/Gronner
+
+    let mut floor = BathroomFloor::new(101, 103, input);
+    let nr_robots = floor.robots.len();
+    let mut seconds = 0;
+    loop {
+        seconds += 1;
+        floor.move_robots(1);
+        if floor.robots.iter().map(|robot| robot.pos).unique().count() == nr_robots {
+            break;
+        }
+    }
+    seconds.to_string()
 }
 
 #[derive(Debug)]
