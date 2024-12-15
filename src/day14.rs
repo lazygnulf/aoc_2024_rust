@@ -170,12 +170,7 @@ p=9,5 v=-3,-3"
     }
 
     #[test]
-    fn test_part2_with_examples() {
-        assert_eq!(solve_part2(example()), "42");
-    }
-
-    #[test]
     fn test_part2_with_input() {
-        assert_eq!(solve_part2(&get_day().read_input()), "42");
+        assert_eq!(solve_part2(&get_day().read_input()), "7569");
     }
 }
