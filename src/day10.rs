@@ -104,7 +104,7 @@ impl TopographicMap {
             let mut completed = false;
             while !completed {
                 completed = true;
-                for (idx, trail) in trail_head.into_iter().enumerate() {
+                for (_idx, trail) in trail_head.into_iter().enumerate() {
                     let last_pos = trail.positions[trail.positions.len() - 1];
 
                     if last_pos.1 == 9 {

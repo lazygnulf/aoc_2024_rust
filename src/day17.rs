@@ -1,5 +1,3 @@
-use std::process::Output;
-
 use num_derive::FromPrimitive;
 use regex::Regex;
 
@@ -14,27 +12,26 @@ pub fn get_day() -> Day {
 
 fn solve_part1(input: &str) -> String {
     let mut computer = Computer::new(input);
-    //    println!("{:?}", computer);
-
     let output = computer.run();
-
     output.to_string()
 }
 
-fn solve_part2(_input: &str) -> String {
-    "42".to_string()
+fn solve_part2(input: &str) -> String {
+    let computer = Computer::new(input);
+    let reg_a = part2_from_felix(computer);
+    reg_a.to_string()
 }
 
 #[derive(Debug, FromPrimitive)]
 enum OpCode {
-    adv = 0,
-    bxl = 1,
-    bst = 2,
-    jnz = 3,
-    bxc = 4,
-    out = 5,
-    bdv = 6,
-    cdv = 7,
+    ADV = 0,
+    BXL = 1,
+    BST = 2,
+    JNZ = 3,
+    BXC = 4,
+    OUT = 5,
+    BDV = 6,
+    CDV = 7,
 }
 
 #[derive(Debug)]
@@ -46,9 +43,10 @@ struct Operation {
 #[derive(Debug)]
 struct Computer {
     program: Vec<Operation>,
-    reg_A: u64,
-    reg_B: u64,
-    reg_C: u64,
+    program_raw: Vec<u64>,
+    reg_a: u64,
+    reg_b: u64,
+    reg_c: u64,
     ip: usize,
 }
 
@@ -57,30 +55,34 @@ impl Computer {
         let parts: Vec<&str> = input.split("\n\n").collect();
 
         // parse registers
-        let mut reg_A: Option<u64> = None;
-        let mut reg_B: Option<u64> = None;
-        let mut reg_C: Option<u64> = None;
+        let mut reg_a: Option<u64> = None;
+        let mut reg_b: Option<u64> = None;
+        let mut reg_c: Option<u64> = None;
         let re = Regex::new(r"Register ([ABC]): (\d+)").unwrap();
         for (_, [reg, val]) in re.captures_iter(parts[0]).map(|c| c.extract()) {
             match reg {
-                "A" => reg_A = Some(val.parse::<u64>().unwrap()),
-                "B" => reg_B = Some(val.parse::<u64>().unwrap()),
-                "C" => reg_C = Some(val.parse::<u64>().unwrap()),
+                "A" => reg_a = Some(val.parse::<u64>().unwrap()),
+                "B" => reg_b = Some(val.parse::<u64>().unwrap()),
+                "C" => reg_c = Some(val.parse::<u64>().unwrap()),
                 _ => panic!("Unexpected register"),
             }
         }
 
         // parse program
         let mut program = vec![];
+        let mut program_raw: Vec<u64> = vec![];
         let program_str = parts[1].split_whitespace().collect::<Vec<&str>>()[1];
         let mut iter = program_str.split(',');
         loop {
             match iter.next() {
                 None => break,
-                Some(code) => {
-                    let instruction: OpCode =
-                        num::FromPrimitive::from_u8(code.parse::<u8>().unwrap()).unwrap();
+                Some(opcode_str) => {
+                    let opcode = opcode_str.parse::<u8>().unwrap();
+                    let instruction: OpCode = num::FromPrimitive::from_u8(opcode).unwrap();
+
                     let operand = iter.next().unwrap().parse::<u8>().unwrap();
+                    program_raw.push(opcode as u64);
+                    program_raw.push(operand as u64);
                     program.push(Operation {
                         instruction,
                         operand,
@@ -91,9 +93,10 @@ impl Computer {
 
         Computer {
             program,
-            reg_A: reg_A.unwrap(),
-            reg_B: reg_B.unwrap(),
-            reg_C: reg_C.unwrap(),
+            program_raw,
+            reg_a: reg_a.unwrap(),
+            reg_b: reg_b.unwrap(),
+            reg_c: reg_c.unwrap(),
             ip: 0,
         }
     }
@@ -103,9 +106,9 @@ impl Computer {
             return operand as u64;
         }
         match operand {
-            4 => self.reg_A,
-            5 => self.reg_B,
-            6 => self.reg_C,
+            4 => self.reg_a,
+            5 => self.reg_b,
+            6 => self.reg_c,
             _ => panic!("unexpected operand"),
         }
     }
@@ -119,52 +122,48 @@ impl Computer {
 
             let op = &self.program[self.ip];
             match op.instruction {
-                OpCode::adv => {
-                    let nom = self.reg_A;
+                OpCode::ADV => {
+                    let nom = self.reg_a;
                     let denom = 2u64.pow(self.operand_value(op.operand) as u32);
-                    self.reg_A = nom / denom;
+                    self.reg_a = nom / denom;
                 }
 
-                OpCode::bxl => {
-                    self.reg_B = self.reg_B ^ op.operand as u64;
+                OpCode::BXL => {
+                    self.reg_b = self.reg_b ^ op.operand as u64;
                 }
 
-                OpCode::bst => {
-                    self.reg_B = self.operand_value(op.operand) % 8;
+                OpCode::BST => {
+                    self.reg_b = self.operand_value(op.operand) % 8;
                 }
 
-                OpCode::jnz => {
-                    if self.reg_A != 0 {
+                OpCode::JNZ => {
+                    if self.reg_a != 0 {
                         assert!(op.operand % 2 == 0);
                         self.ip = op.operand as usize / 2;
                         jumped = true;
                     }
                 }
 
-                OpCode::bxc => {
-                    self.reg_B = self.reg_B ^ self.reg_C;
+                OpCode::BXC => {
+                    self.reg_b = self.reg_b ^ self.reg_c;
                     // igore operand
                 }
 
-                OpCode::out => {
+                OpCode::OUT => {
                     let val = self.operand_value(op.operand) % 8;
                     output.push(val);
                 }
 
-                OpCode::bdv => {
-                    let nom = self.reg_A;
+                OpCode::BDV => {
+                    let nom = self.reg_a;
                     let denom = 2u64.pow(self.operand_value(op.operand) as u32);
-                    self.reg_B = nom / denom;
+                    self.reg_b = nom / denom;
                 }
 
-                OpCode::cdv => {
-                    let nom = self.reg_A;
+                OpCode::CDV => {
+                    let nom = self.reg_a;
                     let denom = 2u64.pow(self.operand_value(op.operand) as u32);
-                    self.reg_C = nom / denom;
-                }
-
-                _ => {
-                    panic!("Unexpected instruction {:?} at {}", op, self.ip);
+                    self.reg_c = nom / denom;
                 }
             }
 
@@ -181,6 +180,50 @@ impl Computer {
     }
 }
 
+fn compute_fast(mut a: u64) -> Vec<u64> {
+    // bst 4(A)         => B = A mod 8
+    // bxl 1(1)         => B = B xor 1
+    // cdv 5(B)         => C = A / 2^B
+    // bxc 6(ignored)   => B = B xor C
+    // adv 3(3)         => A = A / 2^3
+    // bxl 4(4)         => B = B xor 4
+    // out 5(B)
+    // jnz 0
+
+    let mut out = vec![];
+    let mut b;
+    let mut c;
+    while a != 0 {
+        b = a % 8;
+        b = b ^ 1;
+        c = a >> b;
+        b = b ^ c;
+        a = a >> 3;
+        b = b ^ 4;
+        out.push(b % 8);
+    }
+    out
+}
+
+fn part2_from_felix(computer: Computer) -> u64 {
+    let mut a = 0;
+    let prog_len = computer.program_raw.len();
+    for i in 0..prog_len {
+        let expected_out = &computer.program_raw[prog_len - i - 1..];
+        let mut offset = 0;
+        loop {
+            let next_a = (a << 3) + offset;
+            let result = compute_fast(next_a);
+            if result == expected_out {
+                a = next_a;
+                break;
+            }
+            offset += 1;
+        }
+    }
+    a
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,6 +234,14 @@ Register B: 0
 Register C: 0
 
 Program: 0,1,5,4,3,0"
+    }
+
+    fn example2() -> &'static str {
+        "Register A: 2024
+Register B: 0
+Register C: 0
+
+Program: 0,3,5,4,3,0"
     }
 
     #[test]
@@ -204,12 +255,7 @@ Program: 0,1,5,4,3,0"
     }
 
     #[test]
-    fn test_part2_with_examples() {
-        assert_eq!(solve_part2(example()), "42");
-    }
-
-    #[test]
     fn test_part2_with_input() {
-        assert_eq!(solve_part2(&get_day().read_input()), "42");
+        assert_eq!(solve_part2(&get_day().read_input()), "202972175280682");
     }
 }
