@@ -14,6 +14,7 @@ mod day11;
 mod day13;
 mod day14;
 mod day15;
+mod day16;
 mod day17;
 mod day18;
 mod util;
@@ -46,6 +47,7 @@ fn main() {
         13 => day13::get_day().solve(),
         14 => day14::get_day().solve(),
         15 => day15::get_day().solve(),
+        16 => day16::get_day().solve(),
         17 => day17::get_day().solve(),
         18 => day18::get_day().solve(),
 
